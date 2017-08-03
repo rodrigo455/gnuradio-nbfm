@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE softpkg PUBLIC "-//JTRS//DTD SCA V2.2.2 SPD//EN" "softpkg.dtd">
+<softpkg id="DCE:90e0f367-8451-4d01-b005-dab4e6d28294" name="GrNbFmTx" type="2.1.0" version="1.0">
+  <title>GnuRadio Narrow Band FM Baseband Modulator</title>
+  <author>
+    <name>null</name>
+  </author>
+  <description>Uses GnuRadio Blocks to implement a NBFM Baseband Modulator. based on GnuRadio's nbfm_tx.py</description>
+  <propertyfile type="PRF">
+    <localfile name="GrNbFmTx.prf.xml"/>
+  </propertyfile>
+  <descriptor>
+    <localfile name="GrNbFmTx.scd.xml"/>
+  </descriptor>
+  <implementation id="cpp">
+    <description>The implementation contains descriptive information about the template for a software resource.</description>
+    <code type="Executable">
+      <localfile name="cpp/GrNbFmTx"/>
+      <entrypoint>cpp/GrNbFmTx</entrypoint>
+    </code>
+    <compiler name="/usr/bin/gcc" version="4.4.7"/>
+    <programminglanguage name="C++"/>
+    <humanlanguage name="EN"/>
+    <os name="Linux"/>
+    <processor name="x86"/>
+    <processor name="x86_64"/>
+  </implementation>
+</softpkg>

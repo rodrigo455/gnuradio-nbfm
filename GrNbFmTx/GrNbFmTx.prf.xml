@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties PUBLIC "-//JTRS//DTD SCA V2.2.2 PRF//EN" "properties.dtd">
+<properties>
+  <simple id="audio_rate" mode="readwrite" type="long">
+    <description>sample rate of audio stream, >= 16k (integer)</description>
+    <value>16000</value>
+    <units>Hz</units>
+    <kind kindtype="property"/>
+    <action type="external"/>
+  </simple>
+  <simple id="quad_rate" mode="readwrite" type="long">
+    <description>sample rate of output stream (integer)
+
+quad_rate must be an integer multiple of audio_rate.</description>
+    <value>16000</value>
+    <units>Hz</units>
+    <kind kindtype="property"/>
+    <action type="external"/>
+  </simple>
+  <simple id="tau" mode="readwrite" type="float">
+    <description>preemphasis time constant (default 75e-6) (float)</description>
+    <value>75e-6</value>
+    <kind kindtype="property"/>
+    <action type="external"/>
+  </simple>
+  <simple id="max_dev" mode="readwrite" type="float">
+    <description>maximum deviation in Hz (default 5e3) (float)</description>
+    <value>5e3</value>
+    <units>Hz</units>
+    <kind kindtype="property"/>
+    <action type="external"/>
+  </simple>
+  <simple id="fh" mode="readwrite" type="float">
+    <description>high frequency at which to flatten preemphasis; &lt; 0 means default of 0.925*quad_rate/2.0 (float)</description>
+    <value>-1.0</value>
+    <units>Hz</units>
+    <kind kindtype="property"/>
+    <action type="external"/>
+  </simple>
+  <simple id="stream_id" mode="readwrite" type="string">
+    <value>fm_signal</value>
+    <kind kindtype="property"/>
+    <action type="external"/>
+  </simple>
+</properties>
