@@ -1,5 +1,5 @@
-#ifndef GRNBFMTX_BASE_IMPL_BASE_H
-#define GRNBFMTX_BASE_IMPL_BASE_H
+#ifndef GRNBFMRX_BASE_IMPL_BASE_H
+#define GRNBFMRX_BASE_IMPL_BASE_H
 
 #include <boost/thread.hpp>
 #include <ossie/Component.h>
@@ -7,11 +7,11 @@
 
 #include <bulkio/bulkio.h>
 
-class GrNbFmTx_base : public Component, protected ThreadedComponent
+class GrNbFmRx_base : public Component, protected ThreadedComponent
 {
     public:
-        GrNbFmTx_base(const char *uuid, const char *label);
-        ~GrNbFmTx_base();
+        GrNbFmRx_base(const char *uuid, const char *label);
+        ~GrNbFmRx_base();
 
         void start() throw (CF::Resource::StartError, CORBA::SystemException);
 
@@ -31,21 +31,21 @@ class GrNbFmTx_base : public Component, protected ThreadedComponent
         float tau;
         /// Property: max_dev
         float max_dev;
-        /// Property: fh
-        float fh;
-        /// Property: preemphasis_enable
-        bool preemphasis_enable;
         /// Property: stream_id
         std::string stream_id;
+        /// Property: deemphasis_enable
+        bool deemphasis_enable;
         /// Property: buffer_size
         CORBA::Long buffer_size;
+        /// Property: audio_gain
+        float audio_gain;
 
         // Ports
-        /// Port: audio
-        bulkio::InFloatPort *audio;
         /// Port: fm_signal
-        bulkio::OutFloatPort *fm_signal;
+        bulkio::InFloatPort *fm_signal;
+        /// Port: audio
+        bulkio::OutFloatPort *audio;
 
     private:
 };
-#endif // GRNBFMTX_BASE_IMPL_BASE_H
+#endif // GRNBFMRX_BASE_IMPL_BASE_H

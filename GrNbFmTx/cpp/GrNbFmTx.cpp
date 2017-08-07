@@ -18,6 +18,7 @@ GrNbFmTx_i::GrNbFmTx_i(const char *uuid, const char *label) :
 	interp_factor = 1;
 	gr_input.resize(1);
 	gr_output.resize(1);
+	buffersz = 0;
 }
 
 GrNbFmTx_i::~GrNbFmTx_i(){
@@ -30,14 +31,21 @@ void GrNbFmTx_i::constructor(){
     /***********************************************************************************
      This is the RH constructor. All properties are properly initialized before this function is called 
     ***********************************************************************************/
+}
+
+void GrNbFmTx_i::start() throw (CF::Resource::StartError, CORBA::SystemException){
+
 	double kl, kh, z1, p1, b0, g;
 	std::vector<double> btaps;
 	std::vector<double> ataps;
 	std::vector<float> interp_taps;
 
+	GrNbFmTx_base::start();
+
 	if(quad_rate % audio_rate != 0){
 		LOG_ERROR(GrNbFmTx_i,"GnuRadioNBFM_TX_i: quad_rate is not an integer multiple of audio_rate");
-		quad_rate = (quad_rate/audio_rate)*audio_rate;
+		stop();
+		return;
 	}
 
 	do_interp = (quad_rate == audio_rate);
@@ -74,58 +82,91 @@ void GrNbFmTx_i::constructor(){
 	preemph = gr::filter::iir_filter_ffd::make(btaps, ataps, false);
 
 	modulator = gr::analog::frequency_modulator_fc::make(2*M_PI*max_dev/quad_rate);
+
+	buffersz = buffer_size*interp_factor;
+	mod_out.resize(buffersz);
+	output_buffer.resize(2*buffersz);
+	interp_out.resize(buffersz);
+	preemph_out.resize(buffersz);
 }
 
+void GrNbFmTx_i::stop() throw (CF::Resource::StopError, CORBA::SystemException){
+	GrNbFmTx_base::stop();
+}
+
+void GrNbFmTx_i::validate(CF::Properties property, CF::Properties& validProps, CF::Properties& invalidProps){
+    for (CORBA::ULong ii = 0; ii < property.length (); ++ii) {
+        std::string id((const char*)property[ii].id);
+        // properties cannot be set while the component is running
+        if (_started) {
+			LOG_WARN(GrNbFmTx_i, "'"<<id<<"' cannot be changed while component is running.")
+			CORBA::ULong count = invalidProps.length();
+			invalidProps.length(count + 1);
+			invalidProps[count].id = property[ii].id;
+			invalidProps[count].value = property[ii].value;
+        }
+    }
+
+}
+
+void GrNbFmTx_i::configure(const CF::Properties& configProperties)
+		throw (CF::PropertySet::PartialConfiguration,
+		CF::PropertySet::InvalidConfiguration, CORBA::SystemException) {
+    CF::Properties validProperties;
+    CF::Properties invalidProperties;
+    validate(configProperties, validProperties, invalidProperties);
+
+    if (invalidProperties.length() > 0) {
+        throw CF::PropertySet::InvalidConfiguration("Properties failed validation.  See log for details.", invalidProperties);
+    }
+
+    PropertySet_impl::configure(configProperties);
+}
 
 int GrNbFmTx_i::serviceFunction(){
 	LOG_TRACE(GrNbFmTx_i,__PRETTY_FUNCTION__);
-	int n;
+	int blocksz;
 
-	bulkio::InFloatPort::dataTransfer *packet = audio->getPacket(0);
+	bulkio::InFloatStream stream = audio->getCurrentStream(0);
 
-	if (packet == NULL)
+	if(!stream)
 		return NOOP;
 
-	if (packet->inputQueueFlushed){
+	bulkio::FloatDataBlock block = stream.read(buffersz);
+
+	if(block.inputQueueFlushed()){
 		LOG_WARN(GrNbFmTx_i,"Input Queue Flushed");
 	}
 
-	if(packet->SRI.mode != 0){
+	if(block.complex()){
 		LOG_DEBUG(GrNbFmTx_i,"GrNbFmTx_i::serviceFunction| GrNbFmTx requires real input signal");
 		return NOOP;
 	}
 
-	n = (int)packet->dataBuffer.size()*interp_factor;
-	//LOG_INFO(GnuRadioNBFM_TX_i,"packet size: "<<n);
-	gr_complex complex_buf[n];
-	float out_1[n];
-	float out_2[n];
-	float out_3[2*n];
-
-	gr_input[0] = (const void *)&packet->dataBuffer.front();
-	gr_output[0] = (void *)&out_1[0];
+	gr_input[0] = (const void *)block.data();
+	blocksz = block.size();
+	assert(buffersz >= blocksz);
 
 	if(do_interp){
-		(*interpolator).work(n, gr_input, gr_output);
-
+		gr_output[0] = (void *)&interp_out[0];
+		(*interpolator).work(blocksz, gr_input, gr_output);
 		gr_input[0] = gr_output[0];
-		gr_output[0] = (void *)&out_2[0];
 	}
 
-	(*preemph).work(n, gr_input, gr_output);
-
-	gr_input[0] = gr_output[0];
-	gr_output[0] = (void *)&complex_buf[0];
-
-	(*modulator).work(n, gr_input, gr_output);
-
-	for(int i=0; i < n; i++){
-		out_3[2*i] =  real(complex_buf[i]);
-		out_3[2*i+1] =  imag(complex_buf[i]);
+	if(preemphasis_enable){
+		gr_output[0] = (void *)&preemph_out[0];
+		(*preemph).work(blocksz, gr_input, gr_output);
+		gr_input[0] = gr_output[0];
 	}
+
+	gr_output[0] = (void *)&mod_out[0];
+
+	(*modulator).work(blocksz, gr_input, gr_output);
+
+	gr_complex2float(&mod_out[0],&output_buffer[0],blocksz);
 
 	if(sri_changed){
-		BULKIO::StreamSRI sri = packet->SRI;
+		BULKIO::StreamSRI sri = block.sri();
 		sri.xdelta = sri.xdelta/interp_factor;
 		sri.streamID = stream_id.c_str();
 		sri.mode = 1;
@@ -134,9 +175,17 @@ int GrNbFmTx_i::serviceFunction(){
 	}
 
 	if(fm_signal->isActive()){
-		fm_signal->pushPacket(out_3,2*n, bulkio::time::utils::now(), false, stream_id);
+		fm_signal->pushPacket(&output_buffer[0],2*blocksz, bulkio::time::utils::now(), false, stream_id);
 	}
 
 	return NORMAL;
+}
+
+void GrNbFmTx_i::gr_complex2float(gr_complex* input, float* output, int n){
+	int _n = n;
+	while(_n--){
+		*(output++) = real(*input);
+		*(output++) = imag(*(input++));
+	}
 }
 

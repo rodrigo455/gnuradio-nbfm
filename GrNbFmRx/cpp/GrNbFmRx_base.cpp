@@ -1,4 +1,4 @@
-#include "GrNbFmTx_base.h"
+#include "GrNbFmRx_base.h"
 
 /*******************************************************************************************
 
@@ -10,7 +10,7 @@
 
 ******************************************************************************************/
 
-GrNbFmTx_base::GrNbFmTx_base(const char *uuid, const char *label) :
+GrNbFmRx_base::GrNbFmRx_base(const char *uuid, const char *label) :
     Component(uuid, label),
     ThreadedComponent()
 {
@@ -18,31 +18,31 @@ GrNbFmTx_base::GrNbFmTx_base(const char *uuid, const char *label) :
 
     loadProperties();
 
-    audio = new bulkio::InFloatPort("audio");
-    addPort("audio", audio);
-    fm_signal = new bulkio::OutFloatPort("fm_signal");
+    fm_signal = new bulkio::InFloatPort("fm_signal");
     addPort("fm_signal", fm_signal);
+    audio = new bulkio::OutFloatPort("audio");
+    addPort("audio", audio);
 }
 
-GrNbFmTx_base::~GrNbFmTx_base()
+GrNbFmRx_base::~GrNbFmRx_base()
 {
-    audio->_remove_ref();
-    audio = 0;
     fm_signal->_remove_ref();
     fm_signal = 0;
+    audio->_remove_ref();
+    audio = 0;
 }
 
 /*******************************************************************************************
     Framework-level functions
     These functions are generally called by the framework to perform housekeeping.
 *******************************************************************************************/
-void GrNbFmTx_base::start() throw (CORBA::SystemException, CF::Resource::StartError)
+void GrNbFmRx_base::start() throw (CORBA::SystemException, CF::Resource::StartError)
 {
     Component::start();
     ThreadedComponent::startThread();
 }
 
-void GrNbFmTx_base::stop() throw (CORBA::SystemException, CF::Resource::StopError)
+void GrNbFmRx_base::stop() throw (CORBA::SystemException, CF::Resource::StopError)
 {
     Component::stop();
     if (!ThreadedComponent::stopThread()) {
@@ -50,7 +50,7 @@ void GrNbFmTx_base::stop() throw (CORBA::SystemException, CF::Resource::StopErro
     }
 }
 
-void GrNbFmTx_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle::ReleaseError)
+void GrNbFmRx_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle::ReleaseError)
 {
     // This function clears the component running condition so main shuts down everything
     try {
@@ -62,7 +62,7 @@ void GrNbFmTx_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle
     Component::releaseObject();
 }
 
-void GrNbFmTx_base::loadProperties()
+void GrNbFmRx_base::loadProperties()
 {
     addProperty(audio_rate,
                 16000,
@@ -100,27 +100,18 @@ void GrNbFmTx_base::loadProperties()
                 "external",
                 "property");
 
-    addProperty(fh,
-                -1.0,
-                "fh",
-                "",
-                "readwrite",
-                "Hz",
-                "external",
-                "property");
-
-    addProperty(preemphasis_enable,
-                false,
-                "preemphasis_enable",
-                "",
-                "readwrite",
-                "",
-                "external",
-                "property");
-
     addProperty(stream_id,
-                "fm_signal",
+                "fm_audio",
                 "stream_id",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "property");
+
+    addProperty(deemphasis_enable,
+                false,
+                "deemphasis_enable",
                 "",
                 "readwrite",
                 "",
@@ -130,6 +121,15 @@ void GrNbFmTx_base::loadProperties()
     addProperty(buffer_size,
                 1024,
                 "buffer_size",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "property");
+
+    addProperty(audio_gain,
+                10.0,
+                "audio_gain",
                 "",
                 "readwrite",
                 "",

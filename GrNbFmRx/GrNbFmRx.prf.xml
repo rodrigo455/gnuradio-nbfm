@@ -10,7 +10,6 @@
   </simple>
   <simple id="quad_rate" mode="readwrite" type="long">
     <description>sample rate of output stream (integer)
-
 quad_rate must be an integer multiple of audio_rate.</description>
     <value>16000</value>
     <units>Hz</units>
@@ -30,14 +29,12 @@ quad_rate must be an integer multiple of audio_rate.</description>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
-  <simple id="fh" mode="readwrite" type="float">
-    <description>high frequency at which to flatten preemphasis; &lt; 0 means default of 0.925*quad_rate/2.0 (float)</description>
-    <value>-1.0</value>
-    <units>Hz</units>
+  <simple id="stream_id" mode="readwrite" type="string">
+    <value>fm_audio</value>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
-  <simple id="preemphasis_enable" mode="readwrite" type="boolean">
+  <simple id="deemphasis_enable" mode="readwrite" type="boolean">
     <value>false</value>
     <enumerations>
       <enumeration label="Enabled" value="true"/>
@@ -46,14 +43,15 @@ quad_rate must be an integer multiple of audio_rate.</description>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
-  <simple id="stream_id" mode="readwrite" type="string">
-    <value>fm_signal</value>
-    <kind kindtype="property"/>
-    <action type="external"/>
-  </simple>
   <simple id="buffer_size" mode="readwrite" type="long">
     <description>defines the size of buffers used in dsp chain</description>
     <value>1024</value>
+    <kind kindtype="property"/>
+    <action type="external"/>
+  </simple>
+  <simple id="audio_gain" mode="readwrite" type="float">
+    <description>output audio gain</description>
+    <value>1.0</value>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>

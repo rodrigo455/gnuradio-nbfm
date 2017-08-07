@@ -1,21 +1,21 @@
-#ifndef GRNBFMTX_I_IMPL_H
-#define GRNBFMTX_I_IMPL_H
+#ifndef GRNBFMRX_I_IMPL_H
+#define GRNBFMRX_I_IMPL_H
 
 #undef DEBUG //required to include gnuradio headers
 
-#include <gnuradio/analog/frequency_modulator_fc.h>
+#include <gnuradio/analog/quadrature_demod_cf.h>
 #include <gnuradio/filter/firdes.h>
-#include <gnuradio/filter/interp_fir_filter_fff.h>
 #include <gnuradio/filter/iir_filter_ffd.h>
+#include <gnuradio/filter/fir_filter_fff.h>
 
-#include "GrNbFmTx_base.h"
+#include "GrNbFmRx_base.h"
 
-class GrNbFmTx_i : public GrNbFmTx_base
+class GrNbFmRx_i : public GrNbFmRx_base
 {
-    ENABLE_LOGGING
+	ENABLE_LOGGING
 public:
-	GrNbFmTx_i(const char *uuid, const char *label);
-	~GrNbFmTx_i();
+	GrNbFmRx_i(const char *uuid, const char *label);
+	~GrNbFmRx_i();
 
 	void constructor();
 	void start() throw (CF::Resource::StartError, CORBA::SystemException);
@@ -30,26 +30,26 @@ public:
 	int serviceFunction();
 
 private:
-	bool do_interp;
 	bool sri_changed;
-	int interp_factor;
+	int decim_factor;
 	int buffersz;
 
-	// work function interface
 	gr_vector_const_void_star gr_input;
 	gr_vector_void_star gr_output;
-	// gr blocks shared pointers
-	gr::filter::interp_fir_filter_fff::sptr interpolator;
-	gr::filter::iir_filter_ffd::sptr preemph;
-	gr::analog::frequency_modulator_fc::sptr modulator;
+
+	gr::analog::quadrature_demod_cf::sptr quad_demod;
+	gr::filter::iir_filter_ffd::sptr deemph;
+	gr::filter::fir_filter_fff::sptr audio_filter;
+
+	std::vector<gr_complex> complex_in;
 	// gr blocks outputs
-	std::vector<float> interp_out;
-	std::vector<float> preemph_out;
-	std::vector<gr_complex> mod_out;
+	std::vector<float> quad_out;
+	std::vector<float> deemph_out;
+
 	// redhawk output buffer
 	std::vector<float> output_buffer;
 
-	void gr_complex2float(gr_complex* input, float* output, int n);
+	void float2gr_complex(float* input, gr_complex* output, int n);
 };
 
-#endif // GRNBFMTX_I_IMPL_H
+#endif // GRNBFMRX_I_IMPL_H
