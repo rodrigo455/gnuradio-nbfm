@@ -13,7 +13,7 @@ OSSIE_SDRROOT_AS_PREFIX
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Dependencies
-PKG_CHECK_MODULES([PROJECTDEPS], [ossie >= 2.0 omniORB4 >= 4.1.0 gnuradio-filter gnuradio-analog])
+PKG_CHECK_MODULES([PROJECTDEPS], [ossie >= 2.0 omniORB4 >= 4.1.0 gnuradio-blocks gnuradio-filter gnuradio-analog])
 PKG_CHECK_MODULES([INTERFACEDEPS], [bulkio >= 2.0])
 OSSIE_ENABLE_LOG4CXX
 AX_BOOST_BASE([1.41])

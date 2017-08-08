@@ -3,6 +3,7 @@
 
 #undef DEBUG //required to include gnuradio headers
 
+#include <gnuradio/blocks/short_to_float.h>
 #include <gnuradio/analog/frequency_modulator_fc.h>
 #include <gnuradio/filter/firdes.h>
 #include <gnuradio/filter/interp_fir_filter_fff.h>
@@ -39,10 +40,12 @@ private:
 	gr_vector_const_void_star gr_input;
 	gr_vector_void_star gr_output;
 	// gr blocks shared pointers
+	gr::blocks::short_to_float::sptr to_float;
 	gr::filter::interp_fir_filter_fff::sptr interpolator;
 	gr::filter::iir_filter_ffd::sptr preemph;
 	gr::analog::frequency_modulator_fc::sptr modulator;
 	// gr blocks outputs
+	std::vector<float> float_out;
 	std::vector<float> interp_out;
 	std::vector<float> preemph_out;
 	std::vector<gr_complex> mod_out;

@@ -43,8 +43,8 @@ class GrNbFmRx_base : public Component, protected ThreadedComponent
         // Ports
         /// Port: fm_signal
         bulkio::InFloatPort *fm_signal;
-        /// Port: audio
-        bulkio::OutFloatPort *audio;
+        /// Port: audio_out
+        bulkio::OutShortPort *audio_out;
 
     private:
 };

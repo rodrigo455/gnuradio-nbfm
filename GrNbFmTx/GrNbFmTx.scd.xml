@@ -16,7 +16,7 @@
     <supportsinterface repid="IDL:CF/LogEventConsumer:1.0" supportsname="LogEventConsumer"/>
     <supportsinterface repid="IDL:CF/LogConfiguration:1.0" supportsname="LogConfiguration"/>
     <ports>
-      <provides repid="IDL:BULKIO/dataFloat:1.0" providesname="audio">
+      <provides repid="IDL:BULKIO/dataShort:1.0" providesname="audio">
         <porttype type="data"/>
       </provides>
       <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="fm_signal">
@@ -54,5 +54,9 @@
     </interface>
     <interface name="ProvidesPortStatisticsProvider" repid="IDL:BULKIO/ProvidesPortStatisticsProvider:1.0"/>
     <interface name="updateSRI" repid="IDL:BULKIO/updateSRI:1.0"/>
+    <interface name="dataShort" repid="IDL:BULKIO/dataShort:1.0">
+      <inheritsinterface repid="IDL:BULKIO/ProvidesPortStatisticsProvider:1.0"/>
+      <inheritsinterface repid="IDL:BULKIO/updateSRI:1.0"/>
+    </interface>
   </interfaces>
 </softwarecomponent>

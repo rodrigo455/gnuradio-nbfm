@@ -18,7 +18,7 @@ GrNbFmTx_base::GrNbFmTx_base(const char *uuid, const char *label) :
 
     loadProperties();
 
-    audio = new bulkio::InFloatPort("audio");
+    audio = new bulkio::InShortPort("audio");
     addPort("audio", audio);
     fm_signal = new bulkio::OutFloatPort("fm_signal");
     addPort("fm_signal", fm_signal);

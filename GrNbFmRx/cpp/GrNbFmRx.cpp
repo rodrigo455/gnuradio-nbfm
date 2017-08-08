@@ -24,6 +24,7 @@ GrNbFmRx_i::~GrNbFmRx_i(){
 	quad_demod.reset();
 	deemph.reset();
 	audio_filter.reset();
+	to_short.reset();
 }
 
 void GrNbFmRx_i::constructor(){
@@ -67,7 +68,7 @@ void GrNbFmRx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 	// compute FIR taps for audio filter
 	audio_taps = gr::filter::firdes::low_pass(audio_gain,            			// gain
 											  quad_rate,      					// sampling rate
-											  3.5e3,          					// Audio LPF cutoff
+											  2.7e3,          					// Audio LPF cutoff
 											  0.5e3,          					// Transition band
 											  gr::filter::firdes::WIN_HAMMING);	// filter type
 
@@ -75,11 +76,16 @@ void GrNbFmRx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 	decim_factor = quad_rate/audio_rate;
 	audio_filter = gr::filter::fir_filter_fff::make(decim_factor, audio_taps);
 
+	to_short = gr::blocks::float_to_short::make(1,32767);
+
 	buffersz = (buffer_size/decim_factor)*decim_factor;
 	complex_in.resize(buffersz);
 	quad_out.resize(buffersz);
-	output_buffer.resize(buffersz/decim_factor);
+	filter_out.resize(buffersz/decim_factor);
+	short_out.resize(buffersz/decim_factor);
 	deemph_out.resize(buffersz);
+
+	sri_changed = true;
 }
 
 void GrNbFmRx_i::stop() throw (CF::Resource::StopError, CORBA::SystemException){
@@ -153,21 +159,24 @@ int GrNbFmRx_i::serviceFunction(){
 		gr_input[0] = gr_output[0];
 	}
 
-	gr_output[0] = (void *)&output_buffer[0];
-
+	gr_output[0] = (void *)&filter_out[0];
 	(*audio_filter).work(blocksz/decim_factor, gr_input, gr_output);
+	gr_input[0] = gr_output[0];
+
+	gr_output[0] = (void *)&short_out[0];
+	(*to_short).work(blocksz/decim_factor, gr_input, gr_output);
 
 	if(sri_changed){
 		BULKIO::StreamSRI sri = block.sri();
 		sri.xdelta = sri.xdelta*decim_factor;
 		sri.streamID = stream_id.c_str();
 		sri.mode = 0;
-		audio->pushSRI(sri);
+		audio_out->pushSRI(sri);
 		sri_changed = false;
 	}
 
-	if(audio->isActive()){
-		audio->pushPacket(&output_buffer[0], blocksz/decim_factor, bulkio::time::utils::now(), false, stream_id);
+	if(audio_out->isActive()){
+		audio_out->pushPacket(&short_out[0], blocksz/decim_factor, bulkio::time::utils::now(), false, stream_id);
 	}
     
     return NORMAL;

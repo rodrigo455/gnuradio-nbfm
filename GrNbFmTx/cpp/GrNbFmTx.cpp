@@ -22,6 +22,7 @@ GrNbFmTx_i::GrNbFmTx_i(const char *uuid, const char *label) :
 }
 
 GrNbFmTx_i::~GrNbFmTx_i(){
+	to_float.reset();
 	interpolator.reset();
 	preemph.reset();
 	modulator.reset();
@@ -48,14 +49,16 @@ void GrNbFmTx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 		return;
 	}
 
-	do_interp = (quad_rate == audio_rate);
+	do_interp = (quad_rate != audio_rate);
 	interp_factor = quad_rate/audio_rate;
+
+	to_float = gr::blocks::short_to_float::make(1,32767);
 
 	if(do_interp){
 		interp_taps = gr::filter::firdes::low_pass(interp_factor,            		// gain
 												quad_rate,      					// sampling rate
-												4500,          						// cutoff
-												2500,          						// Transition band
+												2.7e3,          					// Audio LPF cutoff
+												0.5e3,          					// Transition band
 												gr::filter::firdes::WIN_HAMMING);	// filter type
 
 		interpolator = gr::filter::interp_fir_filter_fff::make(interp_factor, interp_taps);
@@ -86,8 +89,11 @@ void GrNbFmTx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 	buffersz = buffer_size*interp_factor;
 	mod_out.resize(buffersz);
 	output_buffer.resize(2*buffersz);
+	float_out.resize(buffer_size);
 	interp_out.resize(buffersz);
 	preemph_out.resize(buffersz);
+
+	sri_changed = true;
 }
 
 void GrNbFmTx_i::stop() throw (CF::Resource::StopError, CORBA::SystemException){
@@ -127,12 +133,12 @@ int GrNbFmTx_i::serviceFunction(){
 	LOG_TRACE(GrNbFmTx_i,__PRETTY_FUNCTION__);
 	int blocksz;
 
-	bulkio::InFloatStream stream = audio->getCurrentStream(0);
+	bulkio::InShortStream stream = audio->getCurrentStream(0);
 
 	if(!stream)
 		return NOOP;
 
-	bulkio::FloatDataBlock block = stream.read(buffersz);
+	bulkio::ShortDataBlock block = stream.read(buffer_size);
 
 	if(block.inputQueueFlushed()){
 		LOG_WARN(GrNbFmTx_i,"Input Queue Flushed");
@@ -147,23 +153,27 @@ int GrNbFmTx_i::serviceFunction(){
 	blocksz = block.size();
 	assert(buffersz >= blocksz);
 
+	gr_output[0] = (void *)&float_out[0];
+	(*to_float).work(blocksz, gr_input, gr_output);
+	gr_input[0] = gr_output[0];
+
 	if(do_interp){
 		gr_output[0] = (void *)&interp_out[0];
-		(*interpolator).work(blocksz, gr_input, gr_output);
+		(*interpolator).work(blocksz*interp_factor, gr_input, gr_output);
 		gr_input[0] = gr_output[0];
 	}
 
 	if(preemphasis_enable){
 		gr_output[0] = (void *)&preemph_out[0];
-		(*preemph).work(blocksz, gr_input, gr_output);
+		(*preemph).work(blocksz*interp_factor, gr_input, gr_output);
 		gr_input[0] = gr_output[0];
 	}
 
 	gr_output[0] = (void *)&mod_out[0];
 
-	(*modulator).work(blocksz, gr_input, gr_output);
+	(*modulator).work(blocksz*interp_factor, gr_input, gr_output);
 
-	gr_complex2float(&mod_out[0],&output_buffer[0],blocksz);
+	gr_complex2float(&mod_out[0],&output_buffer[0],blocksz*interp_factor);
 
 	if(sri_changed){
 		BULKIO::StreamSRI sri = block.sri();
@@ -175,7 +185,7 @@ int GrNbFmTx_i::serviceFunction(){
 	}
 
 	if(fm_signal->isActive()){
-		fm_signal->pushPacket(&output_buffer[0],2*blocksz, bulkio::time::utils::now(), false, stream_id);
+		fm_signal->pushPacket(&output_buffer[0],2*blocksz*interp_factor, bulkio::time::utils::now(), false, stream_id);
 	}
 
 	return NORMAL;

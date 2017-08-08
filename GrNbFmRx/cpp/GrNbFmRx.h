@@ -3,6 +3,7 @@
 
 #undef DEBUG //required to include gnuradio headers
 
+#include <gnuradio/blocks/float_to_short.h>
 #include <gnuradio/analog/quadrature_demod_cf.h>
 #include <gnuradio/filter/firdes.h>
 #include <gnuradio/filter/iir_filter_ffd.h>
@@ -40,14 +41,15 @@ private:
 	gr::analog::quadrature_demod_cf::sptr quad_demod;
 	gr::filter::iir_filter_ffd::sptr deemph;
 	gr::filter::fir_filter_fff::sptr audio_filter;
+	gr::blocks::float_to_short::sptr to_short;
 
 	std::vector<gr_complex> complex_in;
 	// gr blocks outputs
 	std::vector<float> quad_out;
 	std::vector<float> deemph_out;
+	std::vector<float> filter_out;
+	std::vector<short> short_out;
 
-	// redhawk output buffer
-	std::vector<float> output_buffer;
 
 	void float2gr_complex(float* input, gr_complex* output, int n);
 };

@@ -20,16 +20,16 @@ GrNbFmRx_base::GrNbFmRx_base(const char *uuid, const char *label) :
 
     fm_signal = new bulkio::InFloatPort("fm_signal");
     addPort("fm_signal", fm_signal);
-    audio = new bulkio::OutFloatPort("audio");
-    addPort("audio", audio);
+    audio_out = new bulkio::OutShortPort("audio_out");
+    addPort("audio_out", audio_out);
 }
 
 GrNbFmRx_base::~GrNbFmRx_base()
 {
     fm_signal->_remove_ref();
     fm_signal = 0;
-    audio->_remove_ref();
-    audio = 0;
+    audio_out->_remove_ref();
+    audio_out = 0;
 }
 
 /*******************************************************************************************
@@ -128,7 +128,7 @@ void GrNbFmRx_base::loadProperties()
                 "property");
 
     addProperty(audio_gain,
-                10.0,
+                1.0,
                 "audio_gain",
                 "",
                 "readwrite",
