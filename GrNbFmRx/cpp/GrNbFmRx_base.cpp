@@ -127,15 +127,6 @@ void GrNbFmRx_base::loadProperties()
                 "external",
                 "property");
 
-    addProperty(audio_gain,
-                1.0,
-                "audio_gain",
-                "",
-                "readwrite",
-                "",
-                "external",
-                "property");
-
 }
 
 

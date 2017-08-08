@@ -37,8 +37,6 @@ class GrNbFmRx_base : public Component, protected ThreadedComponent
         bool deemphasis_enable;
         /// Property: buffer_size
         CORBA::Long buffer_size;
-        /// Property: audio_gain
-        float audio_gain;
 
         // Ports
         /// Port: fm_signal

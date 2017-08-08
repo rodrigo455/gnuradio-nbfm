@@ -66,7 +66,7 @@ void GrNbFmRx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 	deemph = gr::filter::iir_filter_ffd::make(btaps, ataps, false);
 
 	// compute FIR taps for audio filter
-	audio_taps = gr::filter::firdes::low_pass(audio_gain,            			// gain
+	audio_taps = gr::filter::firdes::low_pass(1.0,            			// gain
 											  quad_rate,      					// sampling rate
 											  2.7e3,          					// Audio LPF cutoff
 											  0.5e3,          					// Transition band
@@ -159,9 +159,11 @@ int GrNbFmRx_i::serviceFunction(){
 		gr_input[0] = gr_output[0];
 	}
 
-	gr_output[0] = (void *)&filter_out[0];
-	(*audio_filter).work(blocksz/decim_factor, gr_input, gr_output);
-	gr_input[0] = gr_output[0];
+	if(decim_factor!=1){
+		gr_output[0] = (void *)&filter_out[0];
+		(*audio_filter).work(blocksz/decim_factor, gr_input, gr_output);
+		gr_input[0] = gr_output[0];
+	}
 
 	gr_output[0] = (void *)&short_out[0];
 	(*to_short).work(blocksz/decim_factor, gr_input, gr_output);

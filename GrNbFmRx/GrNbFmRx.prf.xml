@@ -3,7 +3,7 @@
 <properties>
   <simple id="audio_rate" mode="readwrite" type="long">
     <description>sample rate of audio stream, >= 16k (integer)</description>
-    <value>16000</value>
+    <value>8000</value>
     <units>Hz</units>
     <kind kindtype="property"/>
     <action type="external"/>
@@ -11,7 +11,7 @@
   <simple id="quad_rate" mode="readwrite" type="long">
     <description>sample rate of output stream (integer)
 quad_rate must be an integer multiple of audio_rate.</description>
-    <value>16000</value>
+    <value>8000</value>
     <units>Hz</units>
     <kind kindtype="property"/>
     <action type="external"/>
@@ -46,12 +46,6 @@ quad_rate must be an integer multiple of audio_rate.</description>
   <simple id="buffer_size" mode="readwrite" type="long">
     <description>defines the size of buffers used in dsp chain</description>
     <value>1024</value>
-    <kind kindtype="property"/>
-    <action type="external"/>
-  </simple>
-  <simple id="audio_gain" mode="readwrite" type="float">
-    <description>output audio gain</description>
-    <value>1.0</value>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
