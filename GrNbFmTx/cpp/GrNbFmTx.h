@@ -49,10 +49,6 @@ private:
 	std::vector<float> interp_out;
 	std::vector<float> preemph_out;
 	std::vector<gr_complex> mod_out;
-	// redhawk output buffer
-	std::vector<float> output_buffer;
-
-	void gr_complex2float(gr_complex* input, float* output, int n);
 };
 
 #endif // GRNBFMTX_I_IMPL_H

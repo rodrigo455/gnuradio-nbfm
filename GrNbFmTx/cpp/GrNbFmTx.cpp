@@ -88,7 +88,6 @@ void GrNbFmTx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 
 	buffersz = buffer_size*interp_factor;
 	mod_out.resize(buffersz);
-	output_buffer.resize(2*buffersz);
 	float_out.resize(buffer_size);
 	interp_out.resize(buffersz);
 	preemph_out.resize(buffersz);
@@ -173,8 +172,6 @@ int GrNbFmTx_i::serviceFunction(){
 
 	(*modulator).work(blocksz*interp_factor, gr_input, gr_output);
 
-	gr_complex2float(&mod_out[0],&output_buffer[0],blocksz*interp_factor);
-
 	if(sri_changed){
 		BULKIO::StreamSRI sri = block.sri();
 		sri.xdelta = sri.xdelta/interp_factor;
@@ -185,17 +182,9 @@ int GrNbFmTx_i::serviceFunction(){
 	}
 
 	if(fm_signal->isActive()){
-		fm_signal->pushPacket(&output_buffer[0],2*blocksz*interp_factor, bulkio::time::utils::now(), false, stream_id);
+		fm_signal->pushPacket((float *)&mod_out[0],2*blocksz*interp_factor, bulkio::time::utils::now(), false, stream_id);
 	}
 
 	return NORMAL;
-}
-
-void GrNbFmTx_i::gr_complex2float(gr_complex* input, float* output, int n){
-	int _n = n;
-	while(_n--){
-		*(output++) = real(*input);
-		*(output++) = imag(*(input++));
-	}
 }
 

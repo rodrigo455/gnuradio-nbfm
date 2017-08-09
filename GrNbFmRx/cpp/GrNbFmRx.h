@@ -43,15 +43,12 @@ private:
 	gr::filter::fir_filter_fff::sptr audio_filter;
 	gr::blocks::float_to_short::sptr to_short;
 
-	std::vector<gr_complex> complex_in;
 	// gr blocks outputs
 	std::vector<float> quad_out;
 	std::vector<float> deemph_out;
 	std::vector<float> filter_out;
 	std::vector<short> short_out;
 
-
-	void float2gr_complex(float* input, gr_complex* output, int n);
 };
 
 #endif // GRNBFMRX_I_IMPL_H

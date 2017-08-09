@@ -79,11 +79,10 @@ void GrNbFmRx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 	to_short = gr::blocks::float_to_short::make(1,32767);
 
 	buffersz = (buffer_size/decim_factor)*decim_factor;
-	complex_in.resize(buffersz);
 	quad_out.resize(buffersz);
+	deemph_out.resize(buffersz);
 	filter_out.resize(buffersz/decim_factor);
 	short_out.resize(buffersz/decim_factor);
-	deemph_out.resize(buffersz);
 
 	sri_changed = true;
 }
@@ -145,9 +144,7 @@ int GrNbFmRx_i::serviceFunction(){
 	blocksz = block.cxsize();
 	assert(buffersz >= blocksz);
 
-	float2gr_complex(block.data(), &complex_in[0], blocksz);
-
-	gr_input[0] = (const void *)&complex_in[0];
+	gr_input[0] = (const void *)block.data();
 
 	gr_output[0] = (void *)&quad_out[0];
 	(*quad_demod).work(blocksz, gr_input, gr_output);
@@ -182,13 +179,5 @@ int GrNbFmRx_i::serviceFunction(){
 	}
     
     return NORMAL;
-}
-
-void GrNbFmRx_i::float2gr_complex(float* input, gr_complex* output, int n){
-	int _n = n;
-	while(_n--){
-		*(output++) =  gr_complex(input[0],input[1]);
-		input+=2;
-	}
 }
 
