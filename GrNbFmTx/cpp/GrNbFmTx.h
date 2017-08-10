@@ -31,10 +31,8 @@ public:
 	int serviceFunction();
 
 private:
-	bool do_interp;
 	bool sri_changed;
 	int interp_factor;
-	int buffersz;
 
 	// work function interface
 	gr_vector_const_void_star gr_input;
@@ -44,11 +42,12 @@ private:
 	gr::filter::interp_fir_filter_fff::sptr interpolator;
 	gr::filter::iir_filter_ffd::sptr preemph;
 	gr::analog::frequency_modulator_fc::sptr modulator;
-	// gr blocks outputs
-	std::vector<float> float_out;
-	std::vector<float> interp_out;
-	std::vector<float> preemph_out;
-	std::vector<gr_complex> mod_out;
+	// gr blocks buffers
+	std::vector<short> to_float_in;
+	std::vector<float> interp_in;
+	std::vector<float> preemph_in;
+	std::vector<float> mod_in;
+	std::vector<gr_complex> output_buf;
 };
 
 #endif // GRNBFMTX_I_IMPL_H

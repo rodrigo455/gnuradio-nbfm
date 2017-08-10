@@ -13,12 +13,10 @@ PREPARE_LOGGING(GrNbFmTx_i)
 
 GrNbFmTx_i::GrNbFmTx_i(const char *uuid, const char *label) :
     GrNbFmTx_base(uuid, label){
-	do_interp = true;
 	sri_changed = true;
 	interp_factor = 1;
 	gr_input.resize(1);
 	gr_output.resize(1);
-	buffersz = 0;
 }
 
 GrNbFmTx_i::~GrNbFmTx_i(){
@@ -49,20 +47,19 @@ void GrNbFmTx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 		return;
 	}
 
-	do_interp = (quad_rate != audio_rate);
 	interp_factor = quad_rate/audio_rate;
 
 	to_float = gr::blocks::short_to_float::make(1,32767);
 
-	if(do_interp){
-		interp_taps = gr::filter::firdes::low_pass(interp_factor,            		// gain
-												quad_rate,      					// sampling rate
-												2.7e3,          					// Audio LPF cutoff
-												0.5e3,          					// Transition band
-												gr::filter::firdes::WIN_HAMMING);	// filter type
 
-		interpolator = gr::filter::interp_fir_filter_fff::make(interp_factor, interp_taps);
-	}
+	interp_taps = gr::filter::firdes::low_pass(interp_factor,            		// gain
+											quad_rate,      					// sampling rate
+											2.7e3,          					// Audio LPF cutoff
+											0.5e3,          					// Transition band
+											gr::filter::firdes::WIN_HAMMING);	// filter type
+
+	interpolator = gr::filter::interp_fir_filter_fff::make(interp_factor, interp_taps);
+
 
 	if(fh <= 0.0 || fh >= quad_rate/2.0)
 		fh = 0.925 * quad_rate/2.0;
@@ -86,11 +83,11 @@ void GrNbFmTx_i::start() throw (CF::Resource::StartError, CORBA::SystemException
 
 	modulator = gr::analog::frequency_modulator_fc::make(2*M_PI*max_dev/quad_rate);
 
-	buffersz = buffer_size*interp_factor;
-	mod_out.resize(buffersz);
-	float_out.resize(buffer_size);
-	interp_out.resize(buffersz);
-	preemph_out.resize(buffersz);
+	to_float_in.resize(buffer_size+to_float->history()-1);
+	interp_in.resize(buffer_size+interpolator->history()-1);
+	preemph_in.resize(buffer_size*interp_factor+preemph->history()-1);
+	mod_in.resize(buffer_size*interp_factor+modulator->history()-1);;
+	output_buf.resize(buffer_size*interp_factor);
 
 	sri_changed = true;
 }
@@ -148,29 +145,42 @@ int GrNbFmTx_i::serviceFunction(){
 		return NOOP;
 	}
 
-	gr_input[0] = (const void *)block.data();
 	blocksz = block.size();
-	assert(buffersz >= blocksz);
+	memcpy(&to_float_in[to_float->history()-1],block.data(), sizeof(short)*blocksz);
 
-	gr_output[0] = (void *)&float_out[0];
-	(*to_float).work(blocksz, gr_input, gr_output);
-	gr_input[0] = gr_output[0];
+	gr_input[0] = (const void *)&to_float_in[0];
 
-	if(do_interp){
-		gr_output[0] = (void *)&interp_out[0];
-		(*interpolator).work(blocksz*interp_factor, gr_input, gr_output);
-		gr_input[0] = gr_output[0];
+	if(interp_factor != 1){
+		gr_output[0] = (void *)&interp_in[interpolator->history()-1];
+	}else if(preemphasis_enable){
+		gr_output[0] = (void *)&preemph_in[preemph->history()-1];
+	}else{
+		gr_output[0] = (void *)&mod_in[modulator->history()-1];
+	}
+
+	to_float->work(blocksz, gr_input, gr_output);
+
+	if(interp_factor != 1){
+		gr_input[0] = (const void *)&interp_in[0];
+		if(preemphasis_enable){
+			gr_output[0] = (void *)&preemph_in[preemph->history()-1];
+		}else{
+			gr_output[0] = (void *)&mod_in[modulator->history()-1];
+		}
+		interpolator->work(blocksz*interp_factor, gr_input, gr_output);
 	}
 
 	if(preemphasis_enable){
-		gr_output[0] = (void *)&preemph_out[0];
-		(*preemph).work(blocksz*interp_factor, gr_input, gr_output);
-		gr_input[0] = gr_output[0];
+		gr_input[0] = (const void *)&preemph_in[0];
+		gr_output[0] = (void *)&mod_in[modulator->history()-1];
+		preemph->work(blocksz*interp_factor, gr_input, gr_output);
 	}
 
-	gr_output[0] = (void *)&mod_out[0];
+	gr_input[0] = (const void *)&mod_in[0];
 
-	(*modulator).work(blocksz*interp_factor, gr_input, gr_output);
+	gr_output[0] = (void *)&output_buf[0];
+
+	modulator->work(blocksz*interp_factor, gr_input, gr_output);
 
 	if(sri_changed){
 		BULKIO::StreamSRI sri = block.sri();
@@ -182,8 +192,19 @@ int GrNbFmTx_i::serviceFunction(){
 	}
 
 	if(fm_signal->isActive()){
-		fm_signal->pushPacket((float *)&mod_out[0],2*blocksz*interp_factor, bulkio::time::utils::now(), false, stream_id);
+		fm_signal->pushPacket((float *)&output_buf[0],2*blocksz*interp_factor, bulkio::time::utils::now(), false, stream_id);
 	}
+
+	//update history
+	memcpy(&to_float_in[0],&to_float_in[blocksz-(to_float->history()-1)], sizeof(short)*(to_float->history()-1));
+	if(interp_factor != 1){
+		memcpy(&interp_in[0],&interp_in[blocksz-(interpolator->history()-1)], sizeof(float)*(interpolator->history()-1));
+	}
+	if(preemphasis_enable){
+		memcpy(&preemph_in[0],&preemph_in[blocksz*interp_factor-(preemph->history()-1)], sizeof(float)*(preemph->history()-1));
+	}
+	memcpy(&mod_in[0],&mod_in[blocksz*interp_factor-(modulator->history()-1)], sizeof(gr_complex)*(modulator->history()-1));
+
 
 	return NORMAL;
 }

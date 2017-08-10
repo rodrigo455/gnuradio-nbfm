@@ -147,23 +147,23 @@ int GrNbFmRx_i::serviceFunction(){
 	gr_input[0] = (const void *)block.data();
 
 	gr_output[0] = (void *)&quad_out[0];
-	(*quad_demod).work(blocksz, gr_input, gr_output);
-	gr_input[0] = gr_output[0];
+	quad_demod->work(blocksz, gr_input, gr_output);
+	gr_input[0] = (const void *)gr_output[0];
 
 	if(deemphasis_enable){
 		gr_output[0] = (void *)&deemph_out[0];
-		(*deemph).work(blocksz, gr_input, gr_output);
-		gr_input[0] = gr_output[0];
+		deemph->work(blocksz, gr_input, gr_output);
+		gr_input[0] = (const void *)gr_output[0];
 	}
 
 	if(decim_factor!=1){
 		gr_output[0] = (void *)&filter_out[0];
-		(*audio_filter).work(blocksz/decim_factor, gr_input, gr_output);
-		gr_input[0] = gr_output[0];
+		audio_filter->work(blocksz/decim_factor, gr_input, gr_output);
+		gr_input[0] = (const void *)gr_output[0];
 	}
 
 	gr_output[0] = (void *)&short_out[0];
-	(*to_short).work(blocksz/decim_factor, gr_input, gr_output);
+	to_short->work(blocksz/decim_factor, gr_input, gr_output);
 
 	if(sri_changed){
 		BULKIO::StreamSRI sri = block.sri();
