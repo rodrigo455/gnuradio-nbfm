@@ -2,7 +2,7 @@
 <!DOCTYPE properties PUBLIC "-//JTRS//DTD SCA V2.2.2 PRF//EN" "properties.dtd">
 <properties>
   <simple id="audio_rate" mode="readwrite" type="long">
-    <description>sample rate of audio stream, >= 16k (integer)</description>
+    <description>sample rate of audio stream, >= 8k (integer)</description>
     <value>8000</value>
     <units>Hz</units>
     <kind kindtype="property"/>
@@ -16,12 +16,6 @@ quad_rate must be an integer multiple of audio_rate.</description>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
-  <simple id="tau" mode="readwrite" type="float">
-    <description>preemphasis time constant (default 75e-6) (float)</description>
-    <value>75e-6</value>
-    <kind kindtype="property"/>
-    <action type="external"/>
-  </simple>
   <simple id="max_dev" mode="readwrite" type="float">
     <description>maximum deviation in Hz (default 5e3) (float)</description>
     <value>5e3</value>
@@ -29,12 +23,7 @@ quad_rate must be an integer multiple of audio_rate.</description>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
-  <simple id="stream_id" mode="readwrite" type="string">
-    <value>fm_audio</value>
-    <kind kindtype="property"/>
-    <action type="external"/>
-  </simple>
-  <simple id="deemphasis_enable" mode="readwrite" type="boolean">
+  <simple id="deemphasis" mode="readwrite" type="boolean">
     <value>false</value>
     <enumerations>
       <enumeration label="Enabled" value="true"/>
@@ -43,9 +32,14 @@ quad_rate must be an integer multiple of audio_rate.</description>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
-  <simple id="buffer_size" mode="readwrite" type="long">
-    <description>defines the size of buffers used in dsp chain</description>
-    <value>1024</value>
+  <simple id="tau" mode="readwrite" type="float">
+    <description>preemphasis time constant (default 75e-6) (float)</description>
+    <value>75e-6</value>
+    <kind kindtype="property"/>
+    <action type="external"/>
+  </simple>
+  <simple id="stream_id" mode="readwrite" type="string">
+    <value>fm_audio</value>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>

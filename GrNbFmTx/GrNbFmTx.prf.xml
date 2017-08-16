@@ -24,10 +24,10 @@ quad_rate must be an integer multiple of audio_rate.</description>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
-  <simple id="preemphasis_enable" mode="readwrite" type="boolean">
+  <simple id="preemphasis" mode="readwrite" type="boolean">
     <value>false</value>
     <enumerations>
-      <enumeration label="Enabled" value="true"/>
+      <enumeration label="Enable" value="true"/>
       <enumeration label="Disabled" value="false"/>
     </enumerations>
     <kind kindtype="property"/>
@@ -48,12 +48,6 @@ quad_rate must be an integer multiple of audio_rate.</description>
   </simple>
   <simple id="stream_id" mode="readwrite" type="string">
     <value>fm_signal</value>
-    <kind kindtype="property"/>
-    <action type="external"/>
-  </simple>
-  <simple id="buffer_size" mode="readwrite" type="long">
-    <description>defines the size of buffers used in dsp chain</description>
-    <value>1024</value>
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>

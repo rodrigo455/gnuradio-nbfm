@@ -27,18 +27,16 @@ class GrNbFmTx_base : public Component, protected ThreadedComponent
         CORBA::Long audio_rate;
         /// Property: quad_rate
         CORBA::Long quad_rate;
-        /// Property: tau
-        float tau;
         /// Property: max_dev
         float max_dev;
+        /// Property: preemphasis
+        bool preemphasis;
+        /// Property: tau
+        float tau;
         /// Property: fh
         float fh;
-        /// Property: preemphasis_enable
-        bool preemphasis_enable;
         /// Property: stream_id
         std::string stream_id;
-        /// Property: buffer_size
-        CORBA::Long buffer_size;
 
         // Ports
         /// Port: audio

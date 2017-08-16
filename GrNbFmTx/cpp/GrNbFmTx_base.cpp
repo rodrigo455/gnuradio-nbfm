@@ -65,7 +65,7 @@ void GrNbFmTx_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle
 void GrNbFmTx_base::loadProperties()
 {
     addProperty(audio_rate,
-                16000,
+                8000,
                 "audio_rate",
                 "",
                 "readwrite",
@@ -74,20 +74,11 @@ void GrNbFmTx_base::loadProperties()
                 "property");
 
     addProperty(quad_rate,
-                16000,
+                8000,
                 "quad_rate",
                 "",
                 "readwrite",
                 "Hz",
-                "external",
-                "property");
-
-    addProperty(tau,
-                75e-6,
-                "tau",
-                "",
-                "readwrite",
-                "",
                 "external",
                 "property");
 
@@ -100,6 +91,24 @@ void GrNbFmTx_base::loadProperties()
                 "external",
                 "property");
 
+    addProperty(preemphasis,
+                false,
+                "preemphasis",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "property");
+
+    addProperty(tau,
+                75e-6,
+                "tau",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "property");
+
     addProperty(fh,
                 -1.0,
                 "fh",
@@ -109,27 +118,9 @@ void GrNbFmTx_base::loadProperties()
                 "external",
                 "property");
 
-    addProperty(preemphasis_enable,
-                false,
-                "preemphasis_enable",
-                "",
-                "readwrite",
-                "",
-                "external",
-                "property");
-
     addProperty(stream_id,
                 "fm_signal",
                 "stream_id",
-                "",
-                "readwrite",
-                "",
-                "external",
-                "property");
-
-    addProperty(buffer_size,
-                1024,
-                "buffer_size",
                 "",
                 "readwrite",
                 "",

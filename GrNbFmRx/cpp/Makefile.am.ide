@@ -8,3 +8,5 @@ redhawk_SOURCES_auto += GrNbFmRx.h
 redhawk_SOURCES_auto += GrNbFmRx_base.cpp
 redhawk_SOURCES_auto += GrNbFmRx_base.h
 redhawk_SOURCES_auto += main.cpp
+redhawk_SOURCES_auto += rh_sink_bulkio.h
+redhawk_SOURCES_auto += rh_source_bulkio.h
