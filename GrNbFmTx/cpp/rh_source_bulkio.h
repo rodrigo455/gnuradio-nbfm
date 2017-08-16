@@ -1,7 +1,7 @@
 /* 
  * Author: Rodrigo Rolim Mendes de Alencar <alencar.fmce@imbel.gov.br>
  *
- * Copyright 2017 IMBE/FMCE.
+ * Copyright 2017 IMBEL/FMCE.
  * 
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
