@@ -52,7 +52,7 @@ void GrNbFmTx_i::constructor(){
 	std::vector<double> ataps;
 	std::vector<float> interp_taps;
 
-	setPropertyChangeListener(static_cast<std::string>("quad_rate"), this, &GrNbFmTx_i::quadRateChanged);
+	//setPropertyChangeListener(static_cast<std::string>("quad_rate"), this, &GrNbFmTx_i::quadRateChanged);
 
 	if(quad_rate % audio_rate != 0 || quad_rate == 0){
 		quad_rate = (quad_rate/audio_rate)*audio_rate;
@@ -67,10 +67,10 @@ void GrNbFmTx_i::constructor(){
 	to_float = gr::blocks::short_to_float::make(1,32767);
 
 	interp_taps = gr::filter::firdes::low_pass(interp_factor,            		// gain
-											quad_rate,      					// sampling rate
-											3.3e3,          					// Audio LPF cutoff
-											0.5e3,          					// Transition band
-											gr::filter::firdes::WIN_HAMMING);	// filter type
+						quad_rate,      			// sampling rate
+						3.3e3,          			// Audio LPF cutoff
+						0.5e3,          			// Transition band
+						gr::filter::firdes::WIN_HAMMING);	// filter type
 
 	interpolator = gr::filter::interp_fir_filter_fff::make(interp_factor, interp_taps);
 
@@ -97,9 +97,8 @@ void GrNbFmTx_i::constructor(){
 
 	modulator = gr::analog::frequency_modulator_fc::make(2*M_PI*max_dev/quad_rate);
 
-	short_in = (new RH_shortSource(audio, false))->get_sptr();
-
-	float_out = (new RH_floatSink(fm_signal, stream_id ,true))->get_sptr();
+	short_in = RH_shortSource::make(audio, false);
+	float_out = RH_floatSink::make(fm_signal, stream_id ,true);
 
 	top_block = gr::make_top_block("nbfm_tx");
 
@@ -154,78 +153,78 @@ int GrNbFmTx_i::serviceFunction(){
 }
 
 //TODO property listeners
-void GrNbFmTx_i::quadRateChanged(const std::string& propid){
-
-	double kl, kh, z1, p1, b0, g;
-	std::vector<double> btaps;
-	std::vector<double> ataps;
-	std::vector<float> interp_taps;
-
-	if(quad_rate % audio_rate != 0 || quad_rate == 0){
-		quad_rate = (quad_rate/audio_rate)*audio_rate;
-		if(quad_rate == 0){
-			quad_rate = audio_rate;
-		}
-		LOG_WARN(GrNbFmTx_i,"GnuRadioNBFM_TX_i: quad_rate was changed to "<<quad_rate<<" to become a multiple of audio_rate");
-	}
-
-	interp_factor = quad_rate/audio_rate;
-
-	interp_taps = gr::filter::firdes::low_pass(interp_factor,            		// gain
-												quad_rate,      					// sampling rate
-												3.3e3,          					// Audio LPF cutoff
-												0.5e3,          					// Transition band
-												gr::filter::firdes::WIN_HAMMING);	// filter type
-
-	interpolator->set_interpolation(interp_factor);
-	interpolator->set_taps(interp_taps);
-
-	if(fh <= 0.0 || fh >= quad_rate/2.0)
-		fh = 0.925 * quad_rate/2.0;
-
-	kl = -tan(1.0 / (2.0 * quad_rate * tau));
-	kh = -tan(M_PI * fh / quad_rate);
-	z1 = (1.0 + kl) / (1.0 - kl);
-	p1 = (1.0 + kh) / (1.0 - kh);
-	b0 = (1.0 - kl) / (1.0 - kh);
-
-	g = fabs(1.0-p1)/(b0*fabs(1.0-z1));
-
-	btaps.resize(2);
-	btaps[0] = g*b0;
-	btaps[1] = -g*b0*z1;
-	ataps.resize(2);
-	ataps[0] = 1.0;
-	ataps[1] = -p1;
-
-	preemph->set_taps(btaps, ataps);
-
-	modulator->set_sensitivity(2*M_PI*max_dev/quad_rate);
-
-	top_block->lock();
-	top_block->disconnect_all();
-
-	top_block->connect(short_in, 0, to_float, 0);
-	if(interp_factor != 1){
-		top_block->connect(to_float, 0, interpolator, 0);
-		if(preemphasis){
-			top_block->connect(interpolator, 0, preemph, 0);
-			top_block->connect(preemph, 0, modulator, 0);
-		}else{
-			top_block->connect(interpolator, 0, modulator, 0);
-		}
-	}else{
-		if(preemphasis){
-			top_block->connect(to_float, 0, preemph, 0);
-			top_block->connect(preemph, 0, modulator, 0);
-		}else{
-			top_block->connect(to_float, 0, modulator, 0);
-		}
-	}
-	top_block->connect(modulator, 0, float_out, 0);
-
-	top_block->unlock();
-}
+//void GrNbFmTx_i::quadRateChanged(const std::string& propid){
+//
+//	double kl, kh, z1, p1, b0, g;
+//	std::vector<double> btaps;
+//	std::vector<double> ataps;
+//	std::vector<float> interp_taps;
+//
+//	if(quad_rate % audio_rate != 0 || quad_rate == 0){
+//		quad_rate = (quad_rate/audio_rate)*audio_rate;
+//		if(quad_rate == 0){
+//			quad_rate = audio_rate;
+//		}
+//		LOG_WARN(GrNbFmTx_i,"GnuRadioNBFM_TX_i: quad_rate was changed to "<<quad_rate<<" to become a multiple of audio_rate");
+//	}
+//
+//	interp_factor = quad_rate/audio_rate;
+//
+//	interp_taps = gr::filter::firdes::low_pass(interp_factor,            		// gain
+//						quad_rate,      			// sampling rate
+//						3.3e3,          			// Audio LPF cutoff
+//						0.5e3,          			// Transition band
+//						gr::filter::firdes::WIN_HAMMING);	// filter type
+//
+//	interpolator->set_interpolation(interp_factor);
+//	interpolator->set_taps(interp_taps);
+//
+//	if(fh <= 0.0 || fh >= quad_rate/2.0)
+//		fh = 0.925 * quad_rate/2.0;
+//
+//	kl = -tan(1.0 / (2.0 * quad_rate * tau));
+//	kh = -tan(M_PI * fh / quad_rate);
+//	z1 = (1.0 + kl) / (1.0 - kl);
+//	p1 = (1.0 + kh) / (1.0 - kh);
+//	b0 = (1.0 - kl) / (1.0 - kh);
+//
+//	g = fabs(1.0-p1)/(b0*fabs(1.0-z1));
+//
+//	btaps.resize(2);
+//	btaps[0] = g*b0;
+//	btaps[1] = -g*b0*z1;
+//	ataps.resize(2);
+//	ataps[0] = 1.0;
+//	ataps[1] = -p1;
+//
+//	preemph->set_taps(btaps, ataps);
+//
+//	modulator->set_sensitivity(2*M_PI*max_dev/quad_rate);
+//
+//	top_block->lock();
+//	top_block->disconnect_all();
+//
+//	top_block->connect(short_in, 0, to_float, 0);
+//	if(interp_factor != 1){
+//		top_block->connect(to_float, 0, interpolator, 0);
+//		if(preemphasis){
+//			top_block->connect(interpolator, 0, preemph, 0);
+//			top_block->connect(preemph, 0, modulator, 0);
+//		}else{
+//			top_block->connect(interpolator, 0, modulator, 0);
+//		}
+//	}else{
+//		if(preemphasis){
+//			top_block->connect(to_float, 0, preemph, 0);
+//			top_block->connect(preemph, 0, modulator, 0);
+//		}else{
+//			top_block->connect(to_float, 0, modulator, 0);
+//		}
+//	}
+//	top_block->connect(modulator, 0, float_out, 0);
+//
+//	top_block->unlock();
+//}
 
 
 

@@ -45,7 +45,7 @@ public:
 	}
 	~rh_source_bulkio();
 
-	sptr get_sptr();
+	static sptr make(bulkio::InNumericPort<PORT_TYPE>* port, bool complex);
 
 	int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
@@ -53,8 +53,8 @@ public:
 
 template<typename PORT_TYPE, typename DATA_TYPE>
 typename rh_source_bulkio<PORT_TYPE, DATA_TYPE>::sptr
-rh_source_bulkio<PORT_TYPE, DATA_TYPE>::get_sptr() {
-	return gnuradio::get_initial_sptr(this);
+rh_source_bulkio<PORT_TYPE, DATA_TYPE>::make(bulkio::InNumericPort<PORT_TYPE>* port, bool complex) {
+	return gnuradio::get_initial_sptr(new rh_source_bulkio<PORT_TYPE, DATA_TYPE>(port, complex));
 }
 
 template<typename PORT_TYPE, typename DATA_TYPE>
@@ -95,22 +95,22 @@ int rh_source_bulkio<PORT_TYPE, DATA_TYPE>::work(int noutput_items,
 }
 
 typedef rh_source_bulkio<BULKIO::dataChar, CORBA::Char>     		RH_charSource;
-typedef rh_source_bulkio<BULKIO::dataOctet, CORBA::Octet> 			RH_octetSource;
-typedef RH_charSource                           					RH_int8Source;
-typedef RH_octetSource                          					RH_uint8Source;
-typedef rh_source_bulkio<BULKIO::dataShort, CORBA::Short> 			RH_shortSource;
+typedef rh_source_bulkio<BULKIO::dataOctet, CORBA::Octet> 		RH_octetSource;
+typedef RH_charSource                           			RH_int8Source;
+typedef RH_octetSource                          			RH_uint8Source;
+typedef rh_source_bulkio<BULKIO::dataShort, CORBA::Short> 		RH_shortSource;
 typedef rh_source_bulkio<BULKIO::dataUshort, CORBA::UShort> 		RH_ushortSource;
-typedef RH_shortSource                          					RH_int16Source;
-typedef RH_ushortSource                         					RH_uint16Source;
-typedef rh_source_bulkio<BULKIO::dataLong, CORBA::Long> 			RH_longSource;
-typedef rh_source_bulkio<BULKIO::dataUlong, CORBA::ULong> 			RH_ulongSource;
-typedef RH_longSource                           					RH_int32Source;
-typedef RH_ulongSource                          					RH_uint32Source;
+typedef RH_shortSource                          			RH_int16Source;
+typedef RH_ushortSource                         			RH_uint16Source;
+typedef rh_source_bulkio<BULKIO::dataLong, CORBA::Long> 		RH_longSource;
+typedef rh_source_bulkio<BULKIO::dataUlong, CORBA::ULong> 		RH_ulongSource;
+typedef RH_longSource                           			RH_int32Source;
+typedef RH_ulongSource                          			RH_uint32Source;
 typedef rh_source_bulkio<BULKIO::dataLongLong, CORBA::LongLong> 	RH_longlongSource;
 typedef rh_source_bulkio<BULKIO::dataUlongLong, CORBA::ULongLong> 	RH_ulonglongSource;
-typedef RH_longlongSource                       					RH_int64Source;
-typedef RH_int64Source                      						RH_uint64Source;
-typedef rh_source_bulkio<BULKIO::dataFloat, CORBA::Float> 			RH_floatSource;
+typedef RH_longlongSource                       			RH_int64Source;
+typedef RH_int64Source                      				RH_uint64Source;
+typedef rh_source_bulkio<BULKIO::dataFloat, CORBA::Float> 		RH_floatSource;
 typedef rh_source_bulkio<BULKIO::dataDouble, CORBA::Double> 		RH_doubleSource;
 
 #endif /* _RH_SOURCE_BULKIO_H */

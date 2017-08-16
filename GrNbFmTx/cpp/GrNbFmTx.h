@@ -64,7 +64,7 @@ private:
 
     void startFlowgraph();
     void stopFlowgraph();
-    void quadRateChanged(const std::string& propid);
+    //void quadRateChanged(const std::string& propid);
 };
 
 #endif // GRNBFMTX_I_IMPL_H

@@ -91,9 +91,9 @@ void GrNbFmRx_i::constructor(){
 
 	to_short = gr::blocks::float_to_short::make(1,32767);
 
-	float_in = (new RH_floatSource(fm_signal,true))->get_sptr();
+	float_in = RH_floatSource::make(fm_signal,true);
 
-	short_out = (new RH_shortSink(audio_out, stream_id, false))->get_sptr();
+	short_out = RH_shortSink::make(audio_out, stream_id, false);
 
 	top_block = gr::make_top_block("nbfm_rx");
 

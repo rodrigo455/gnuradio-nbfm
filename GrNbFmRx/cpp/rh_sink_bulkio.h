@@ -48,15 +48,15 @@ public:
 	}
 	~rh_sink_bulkio();
 
-	sptr get_sptr();
+	static sptr make(bulkio::OutNumericPort<PORT_TYPE>* port, const std::string& stream_id, bool complex);
 
 	int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 };
 
 template<typename PORT_TYPE, typename DATA_TYPE>
 typename rh_sink_bulkio<PORT_TYPE, DATA_TYPE>::sptr
-rh_sink_bulkio<PORT_TYPE,DATA_TYPE>::get_sptr() {
-	return gnuradio::get_initial_sptr(this);
+rh_sink_bulkio<PORT_TYPE,DATA_TYPE>::make(bulkio::OutNumericPort<PORT_TYPE>* port, const std::string& stream_id, bool complex) {
+	return gnuradio::get_initial_sptr(new rh_sink_bulkio<PORT_TYPE, DATA_TYPE>(port, stream_id, complex));
 }
 
 template<typename PORT_TYPE, typename DATA_TYPE>
@@ -82,24 +82,24 @@ int rh_sink_bulkio<PORT_TYPE, DATA_TYPE>::work(int noutput_items,
 	return 0;
 }
 
-typedef rh_sink_bulkio<BULKIO::dataChar, CORBA::Char>     			RH_charSink;
-typedef rh_sink_bulkio<BULKIO::dataOctet, CORBA::Octet> 			RH_octetSink;
-typedef RH_charSink                           						RH_int8Sink;
-typedef RH_octetSink                          						RH_uint8Sink;
-typedef rh_sink_bulkio<BULKIO::dataShort, CORBA::Short> 			RH_shortSink;
-typedef rh_sink_bulkio<BULKIO::dataUshort, CORBA::UShort> 			RH_ushortSink;
-typedef RH_shortSink                          						RH_int16Sink;
-typedef RH_ushortSink                         						RH_uint16Sink;
-typedef rh_sink_bulkio<BULKIO::dataLong, CORBA::Long> 				RH_longSink;
-typedef rh_sink_bulkio<BULKIO::dataUlong, CORBA::ULong> 			RH_ulongSink;
-typedef RH_longSink                           						RH_int32Sink;
-typedef RH_ulongSink                          						RH_uint32Sink;
+typedef rh_sink_bulkio<BULKIO::dataChar, CORBA::Char>     		RH_charSink;
+typedef rh_sink_bulkio<BULKIO::dataOctet, CORBA::Octet> 		RH_octetSink;
+typedef RH_charSink                           				RH_int8Sink;
+typedef RH_octetSink                          				RH_uint8Sink;
+typedef rh_sink_bulkio<BULKIO::dataShort, CORBA::Short> 		RH_shortSink;
+typedef rh_sink_bulkio<BULKIO::dataUshort, CORBA::UShort> 		RH_ushortSink;
+typedef RH_shortSink                          				RH_int16Sink;
+typedef RH_ushortSink                         				RH_uint16Sink;
+typedef rh_sink_bulkio<BULKIO::dataLong, CORBA::Long> 			RH_longSink;
+typedef rh_sink_bulkio<BULKIO::dataUlong, CORBA::ULong> 		RH_ulongSink;
+typedef RH_longSink                           				RH_int32Sink;
+typedef RH_ulongSink                          				RH_uint32Sink;
 typedef rh_sink_bulkio<BULKIO::dataLongLong, CORBA::LongLong> 		RH_longlongSink;
 typedef rh_sink_bulkio<BULKIO::dataUlongLong, CORBA::ULongLong> 	RH_ulonglongSink;
-typedef RH_longlongSink                       						RH_int64Sink;
-typedef RH_int64Sink                      							RH_uint64Sink;
-typedef rh_sink_bulkio<BULKIO::dataFloat, CORBA::Float> 			RH_floatSink;
-typedef rh_sink_bulkio<BULKIO::dataDouble, CORBA::Double> 			RH_doubleSink;
+typedef RH_longlongSink                       				RH_int64Sink;
+typedef RH_int64Sink                      				RH_uint64Sink;
+typedef rh_sink_bulkio<BULKIO::dataFloat, CORBA::Float> 		RH_floatSink;
+typedef rh_sink_bulkio<BULKIO::dataDouble, CORBA::Double> 		RH_doubleSink;
 
 #endif /* _RH_SINK_BULKIO_H */
 
