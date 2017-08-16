@@ -56,8 +56,8 @@ private:
 	gr::filter::fir_filter_fff::sptr audio_filter;
 	gr::blocks::float_to_short::sptr to_short;
 
-	RH_floatSource* float_in;
-	RH_shortSink* short_out;
+	RH_floatSource::sptr float_in;
+	RH_shortSink::sptr short_out;
 
     gr::top_block_sptr top_block;
 

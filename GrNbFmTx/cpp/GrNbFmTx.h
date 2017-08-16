@@ -57,14 +57,14 @@ private:
 	gr::filter::iir_filter_ffd::sptr preemph;
 	gr::analog::frequency_modulator_fc::sptr modulator;
 
-	RH_shortSource* short_in;
-	RH_floatSink* float_out;
+	RH_shortSource::sptr short_in;
+	RH_floatSink::sptr float_out;
 
     gr::top_block_sptr top_block;
 
     void startFlowgraph();
     void stopFlowgraph();
-//    void quadRateChanged(const std::string& propid);
+    void quadRateChanged(const std::string& propid);
 };
 
 #endif // GRNBFMTX_I_IMPL_H

@@ -34,8 +34,6 @@ PREPARE_LOGGING(GrNbFmRx_i)
 GrNbFmRx_i::GrNbFmRx_i(const char *uuid, const char *label) :
     GrNbFmRx_base(uuid, label){
 	decim_factor = 1;
-	float_in = NULL;
-	short_out = NULL;
 }
 
 GrNbFmRx_i::~GrNbFmRx_i(){
@@ -44,8 +42,8 @@ GrNbFmRx_i::~GrNbFmRx_i(){
 	audio_filter.reset();
 	to_short.reset();
 	top_block.reset();
-	delete float_in;
-	delete short_out;
+	float_in.reset();
+	short_out.reset();
 }
 
 void GrNbFmRx_i::constructor(){
@@ -93,13 +91,13 @@ void GrNbFmRx_i::constructor(){
 
 	to_short = gr::blocks::float_to_short::make(1,32767);
 
-	float_in = new RH_floatSource(fm_signal,true);
+	float_in = (new RH_floatSource(fm_signal,true))->get_sptr();
 
-	short_out = new RH_shortSink(audio_out, stream_id, false);
+	short_out = (new RH_shortSink(audio_out, stream_id, false))->get_sptr();
 
 	top_block = gr::make_top_block("nbfm_rx");
 
-	top_block->connect(float_in->get_sptr(), 0, quad_demod, 0);
+	top_block->connect(float_in, 0, quad_demod, 0);
 	if(deemphasis){
 		top_block->connect(quad_demod, 0, deemph, 0);
 		top_block->connect(deemph, 0, audio_filter, 0);
@@ -107,7 +105,7 @@ void GrNbFmRx_i::constructor(){
 		top_block->connect(quad_demod, 0, audio_filter, 0);
 	}
 	top_block->connect(audio_filter, 0, to_short, 0);
-	top_block->connect(to_short, 0, short_out->get_sptr(), 0);
+	top_block->connect(to_short, 0, short_out, 0);
 }
 
 void GrNbFmRx_i::start() throw (CF::Resource::StartError, CORBA::SystemException){
